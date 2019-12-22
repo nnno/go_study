@@ -1,3 +1,6 @@
+/**
+ * % go test -run AddTwoNumbers -v ./leetcode
+ */
 package main
 
 import (

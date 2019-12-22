@@ -1,3 +1,6 @@
+/**
+ * % go test -run TwoSum -v ./leetcode
+ */
 package main
 
 import "testing"
