@@ -2,52 +2,86 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 )
 
 func main() {
 	var min, max int = 20, 36
-	ans := initAnswer(min, max)
-	exec(min, max, ans)
+
+	slice := make([]int, max-min)
+	for i := 0; i < max-min; i++ {
+		slice[i] = min + i
+	}
+	ans := slice
+
+	for j := 0; j < len(ans); j++ {
+		index, cost := binarySearchQuestion(ans[j], slice)
+		fmt.Printf("年齢: %d 歳\tcost: %d\n", slice[index], cost)
+		fmt.Println("----")
+	}
+
+	for j := 0; j < len(ans); j++ {
+		index, cost := binarySearch(ans[j], slice)
+		fmt.Printf("年齢: %d 歳\tcost: %d\n", slice[index], cost)
+	}
+
 }
 
+// 初期化 答えの作成
 func initAnswer(min int, max int) int {
-	// minとmaxを小さい順に返す
-	f := func(a int, b int) (int, int) {
-		if a >= b {
-			return b, a
-		} else {
-			return a, b
-		}
-	}
-	min, max = f(min, max)
-
 	rand.Seed(time.Now().UnixNano())
-	return min + rand.Intn(max-min)
+	n := int(math.Abs(float64(max - min)))
+	return min + rand.Intn(n)
 }
 
-func exec(min, max, ans int) {
-	var end bool = false
-	for end == false {
-		n := (max + min) / 2
-		// 正解なら終了
-		if n == ans {
-			fmt.Printf("%d 歳ですね。\n", n)
-			fmt.Println("正解です")
-			end = true
-			break
-		}
-
-		fmt.Printf("%d 歳未満ですか\n", n)
-		// High or Lowで次の値を求める
-		if n > ans {
-			fmt.Println("Yes")
-			max = n
+func binarySearch(n int, slice []int) (index int, cost int) {
+	min, max := 0, len(slice)
+	count := 0
+	for max-1 >= min {
+		count++
+		mid := (min + max) / 2
+		// 質問を再現しないbinary searchなら答えを見つけた瞬間に終了
+		if n == slice[mid] {
+			return mid, count
+		} else if n > slice[mid] {
+			min = mid + 1
 		} else {
-			fmt.Println("No")
-			min = n
+			max = mid
 		}
-		time.Sleep(time.Second)
 	}
+	return -1, count
+}
+
+func binarySearchQuestion(n int, slice []int) (index int, cost int) {
+	min, max := 0, len(slice)
+	count := 0
+
+	for max-1 >= min {
+		count++
+		mid := (min + max) / 2
+		if slice[mid] > n {
+			fmt.Printf("%d 歳未満ですか ... %s\n", slice[mid], "Yes")
+			max = mid
+			if max-min < 1 {
+				if n == slice[mid] {
+					return mid, count
+				} else if n == slice[mid-1] {
+					return mid - 1, count
+				}
+			}
+		} else {
+			fmt.Printf("%d 歳未満ですか ... %s\n", slice[mid], "No")
+			min = mid + 1
+			if max-min < 1 {
+				if n == slice[mid] {
+					return mid, count
+				} else if n == slice[mid+1] {
+					return mid + 1, count
+				}
+			}
+		}
+	}
+	return -1, count
 }
